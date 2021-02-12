@@ -1,0 +1,24 @@
+$server = '192.168.1.1'
+$db = 'test'
+$login = 'TestUser'
+$pwd = 'Abc12345'
+
+$adSearchBase = 'OU=test3,OU=test2,OU=test1,DC=main,DC=domain,DC=your'
+
+$hostnames = Get-ADComputer -SearchBase $adSearchBase -Filter {Enabled -Eq "True"} | Select -Exp Name # for exmaple, get hosts-list from Active Directory
+
+$conn = New-Object System.Data.SqlClient.SqlConnection  # create connection
+
+$conn.ConnectionString = "Server=$server; Database=$db; User ID=$login; Password =$pwd;" # connection string with credentinals
+
+$conn.Open()  # open connection
+
+$qry = $conn.CreateCommand()
+
+foreach ($hst in $hostnames){
+    Write-Host $hst
+    $qry.CommandText = "INSERT INTO [test].[dbo].[test_table] ([id_object],[workstation_name]) VALUES (1,'$hst')"
+    $objReader = $qry.ExecuteNonQuery()
+}
+
+$conn.Close()
